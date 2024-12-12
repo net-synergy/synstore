@@ -1,0 +1,43 @@
+[tool.poetry]
+name = "synstore"
+version = "0.0.0"
+description = "Consistent storage for net-synergy projects."
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/net-synergy/synstore"
+authors = ["David Connell <david32@dcon.addy.io>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+platformdirs = "^4.3.6"
+
+[tool.poetry.group.dev.dependencies]
+ipython = "^8.16.1"
+black = "^24.0"
+isort = "^5.12.0"
+python-lsp-server = "^1.8.0"
+pydocstyle = "^6.3.0"
+pylsp-mypy = "^0.6.7"
+python-lsp-ruff = "^2.0.0"
+ipdb = "^0.13.13"
+
+[tool.black]
+line-length = 79
+preview = true
+
+[tool.pylsp-mypy]
+enabled = true
+live_mode = false
+dmypy = true
+
+[tool.isort]
+profile = "black"
+
+[tool.ruff]
+line-length = 79
+ignore = ["E203"]
+select = ["A", "C", "D", "E", "F", "N", "RET", "SIM"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
