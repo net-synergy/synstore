@@ -1,4 +1,4 @@
-__ALL__ = [
+__all__ = [
     "default_cache_dir",
     "default_data_dir",
     "list_cache",
