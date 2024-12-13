@@ -45,7 +45,7 @@ def default_cache_dir(path: str | None = None) -> str:
     cache_dir = platformdirs.user_cache_dir(pkg_name, _APPAUTHOR)
     cache_dir = os.path.join(cache_dir, path) if path else cache_dir
     if not os.path.exists(cache_dir):
-        os.mkdir(cache_dir, mode=0o755)
+        os.makedirs(cache_dir, mode=0o755)
 
     return cache_dir
 
@@ -65,7 +65,7 @@ def default_data_dir(path: str | None = None) -> str:
     data_dir = platformdirs.user_data_dir(pkg_name, _APPAUTHOR)
     data_dir = os.path.join(data_dir, path) if path else data_dir
     if not os.path.exists(data_dir):
-        os.mkdir(data_dir, mode=0o755)
+        os.makedirs(data_dir, mode=0o755)
 
     return data_dir
 
@@ -102,6 +102,7 @@ def delete_from_cache(file: str, recursive: bool = False) -> None:
         Whether to delete recursively or not. To prevent accidentally deleting
         more data than intended, to delete a non-empty directory, this must
         explicitly be set to True.
+
     """
     _delete_path(os.path.join(file, default_cache_dir()), recursive)
 
@@ -127,5 +128,6 @@ def delete_from_data(file: str, recursive: bool = False) -> None:
         Whether to delete recursively or not. To prevent accidentally deleting
         more data than intended, to delete a non-empty directory, this must
         explicitly be set to True.
+
     """
     _delete_path(os.path.join(file, default_data_dir()), recursive)
