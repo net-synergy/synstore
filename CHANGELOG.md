@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Create directories recursively (i.e. switch from `mkdir` -> `makedirs`).
+- Add storage factory.
 
 ## [0.1.1] - 2024-12-12
 

@@ -5,11 +5,15 @@ __all__ = [
     "delete_from_cache",
     "list_data",
     "delete_from_data",
+    "storage_factory",
 ]
 
 import os
+from collections.abc import Callable
+from typing import TypeVar
 
 import platformdirs
+from typing_extensions import ParamSpec
 
 _APPAUTHOR = "net_synergy"
 pkg_name = ""
@@ -131,3 +135,42 @@ def delete_from_data(file: str, recursive: bool = False) -> None:
 
     """
     _delete_path(os.path.join(file, default_data_dir()), recursive)
+
+
+P = ParamSpec("P")
+T = TypeVar("T")
+
+
+def storage_factory(func: Callable[P, T], subdir: str) -> Callable[P, T]:
+    """Wrap a storage function to work on a subdirectory.
+
+    Generates new functions that behave like the default synstore functions but
+    for a subdirectory of the projects directory.
+
+    Examples
+    --------
+    > import synstore
+    > from synstore import default_cache_dir, storage_factory
+    > synstore.set_package_name("foo")
+    > default_cache_dir()
+    '/home/user/.cache/foo'
+    > default_bar_cache = storage_factory(default_cache_dir, "bar")
+    > default_bar_cache()
+    '/home/user/.cache/foo/bar'
+
+    """
+
+    def wrapper(*args: P.args, **kwds: P.kwargs) -> T:
+        if len(args) != 0:
+            new_args = (os.path.join(subdir, args[0]),) + args[1:]  # type: ignore[call-overload]
+        else:
+            new_args = args
+
+        if "path" in kwds and kwds["path"] is not None:
+            kwds["path"] = os.path.join(subdir, kwds["path"])  # type: ignore[call-overload]
+        else:
+            kwds["path"] = subdir
+
+        return func(*new_args, **kwds)
+
+    return wrapper
