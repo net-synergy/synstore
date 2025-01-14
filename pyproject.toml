@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "synstore"
-version = "0.1.2"
+version = "0.1.3a0"
 description = "Consistent storage for net-synergy projects."
 license = "MIT"
 readme = "README.md"

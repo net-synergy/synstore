@@ -1,4 +1,7 @@
 __all__ = [
+    "set_package_name",
+    "set_cache_dir",
+    "set_data_dir",
     "default_cache_dir",
     "default_data_dir",
     "list_cache",
@@ -17,11 +20,23 @@ from typing_extensions import ParamSpec
 
 _APPAUTHOR = "net_synergy"
 pkg_name = ""
+_CACHE_DIR = ""
+_DATA_DIR = ""
 
 
 def set_package_name(name: str) -> None:
-    global pkg_name
+    """Set the package name.
+
+    This name will be used to create sub-directory at the end of the cache and
+    data directories. If your platform's standard cache directory is
+    `~/.cache`, this will synstore will use `f"~/.cache/{package_name}"` as the
+    default cache for the project.
+    """
+    global pkg_name, _CACHE_DIR, _DATA_DIR
     pkg_name = name
+
+    _CACHE_DIR = platformdirs.user_cache_dir(pkg_name, _APPAUTHOR)
+    _DATA_DIR = platformdirs.user_data_dir(pkg_name, _APPAUTHOR)
 
 
 def _check_package_name() -> None:
@@ -35,6 +50,36 @@ def _check_package_name() -> None:
     )
 
 
+def set_cache_dir(name: str) -> None:
+    """Use this path in place of the platform's default cache directory.
+
+    If you want all cached data to be saved to a different path than the
+    platform's default cache (i.e. somewhere on a different storage drive), it
+    can be set here.
+
+    Note: this will still use the package name as a sub directory of the
+    provided path.
+    """
+    global pkg_name, _CACHE_DIR
+
+    _CACHE_DIR = os.path.join(name, pkg_name)
+
+
+def set_data_dir(name: str) -> None:
+    """Use this path in place of the platform's default data directory.
+
+    If you want all data to be saved to a different path than the platform's
+    default data directory (i.e. somewhere on a different storage drive), it
+    can be set here.
+
+    Note: this will still use the package name as a sub directory of the
+    provided path.
+    """
+    global pkg_name, _DATA_DIR
+
+    _DATA_DIR = os.path.join(name, pkg_name)
+
+
 def default_cache_dir(path: str | None = None) -> str:
     """Find the default location to save cache files.
 
@@ -46,8 +91,7 @@ def default_cache_dir(path: str | None = None) -> str:
     If `path` is provided, return the cache dir with path appended to it.
     """
     _check_package_name()
-    cache_dir = platformdirs.user_cache_dir(pkg_name, _APPAUTHOR)
-    cache_dir = os.path.join(cache_dir, path) if path else cache_dir
+    cache_dir = os.path.join(_CACHE_DIR, path) if path else _CACHE_DIR
     if not os.path.exists(cache_dir):
         os.makedirs(cache_dir, mode=0o755)
 
@@ -66,8 +110,7 @@ def default_data_dir(path: str | None = None) -> str:
     If `path` is provided, return the data dir with path appended to it.
     """
     _check_package_name()
-    data_dir = platformdirs.user_data_dir(pkg_name, _APPAUTHOR)
-    data_dir = os.path.join(data_dir, path) if path else data_dir
+    data_dir = os.path.join(_DATA_DIR, path) if path else _DATA_DIR
     if not os.path.exists(data_dir):
         os.makedirs(data_dir, mode=0o755)
 
