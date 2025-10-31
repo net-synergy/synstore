@@ -191,7 +191,7 @@ def list_config(path: str | None = None) -> list[str]:
     If given a `path` lists the contents of the directory `path` relative to
     the default data directory.
     """
-    return os.listdir(default_cache_dir(path))
+    return os.listdir(default_config_dir(path))
 
 
 def delete_from_cache(file: str, recursive: bool = False) -> None:
