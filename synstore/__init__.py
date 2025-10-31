@@ -2,12 +2,16 @@ __all__ = [
     "set_package_name",
     "set_cache_dir",
     "set_data_dir",
+    "set_config_dir",
     "default_cache_dir",
     "default_data_dir",
+    "default_config_dir",
     "list_cache",
-    "delete_from_cache",
     "list_data",
+    "list_config",
+    "delete_from_cache",
     "delete_from_data",
+    "delete_from_config",
     "storage_factory",
 ]
 
@@ -22,6 +26,7 @@ _APPAUTHOR = "net_synergy"
 pkg_name = ""
 _CACHE_DIR = ""
 _DATA_DIR = ""
+_CONFIG_DIR = ""
 
 
 def set_package_name(name: str) -> None:
@@ -29,14 +34,15 @@ def set_package_name(name: str) -> None:
 
     This name will be used to create sub-directory at the end of the cache and
     data directories. If your platform's standard cache directory is
-    `~/.cache`, this will synstore will use `f"~/.cache/{package_name}"` as the
-    default cache for the project.
+    `~/.cache`, synstore will use `f"~/.cache/{package_name}"` as the default
+    cache for the project.
     """
-    global pkg_name, _CACHE_DIR, _DATA_DIR
+    global pkg_name, _CACHE_DIR, _DATA_DIR, _CONFIG_DIR
     pkg_name = name
 
     _CACHE_DIR = platformdirs.user_cache_dir(pkg_name, _APPAUTHOR)
     _DATA_DIR = platformdirs.user_data_dir(pkg_name, _APPAUTHOR)
+    _CONFIG_DIR = platformdirs.user_config_dir(pkg_name, _APPAUTHOR)
 
 
 def _check_package_name() -> None:
@@ -80,6 +86,21 @@ def set_data_dir(name: str) -> None:
     _DATA_DIR = os.path.join(name, pkg_name)
 
 
+def set_config_dir(name: str) -> None:
+    """Use this path in place of the platform's default config directory.
+
+    If you want all data to be saved to a different path than the platform's
+    default data directory (i.e. somewhere on a different storage drive), it
+    can be set here.
+
+    Note: this will still use the package name as a sub directory of the
+    provided path.
+    """
+    global pkg_name, _CONFIG_DIR
+
+    _CONFIG_DIR = os.path.join(name, pkg_name)
+
+
 def default_cache_dir(path: str | None = None) -> str:
     """Find the default location to save cache files.
 
@@ -103,9 +124,9 @@ def default_data_dir(path: str | None = None) -> str:
 
     If the directory does not exist it is created.
 
-    Data files are files created by a user. It's possible they can be
-    reproduced by rerunning the script that produced them but there is
-    no guarantee they can be perfectly reproduced.
+    Data files are files created by a user, usually indirectly through scripts.
+    It's possible they can be reproduced by rerunning the script that produced
+    them but there is no guarantee they can be perfectly reproduced.
 
     If `path` is provided, return the data dir with path appended to it.
     """
@@ -115,6 +136,24 @@ def default_data_dir(path: str | None = None) -> str:
         os.makedirs(data_dir, mode=0o755)
 
     return data_dir
+
+
+def default_config_dir(path: str | None = None) -> str:
+    """Find the default location to save config files.
+
+    If the directory does not exist it is created.
+
+    Config files are files manually (or sometimes through a configuration
+    routine) by the user to alter the behavior of a package.
+
+    If `path` is provided, return the config dir with path appended to it.
+    """
+    _check_package_name()
+    config_dir = os.path.join(_CONFIG_DIR, path) if path else _CONFIG_DIR
+    if not os.path.exists(config_dir):
+        os.makedirs(config_dir, mode=0o755)
+
+    return config_dir
 
 
 def _delete_path(path: str, recursive: bool):
@@ -137,6 +176,24 @@ def list_cache(path: str | None = None) -> list[str]:
     return os.listdir(default_cache_dir(path))
 
 
+def list_data(path: str | None = None) -> list[str]:
+    """List the contents of the data directory.
+
+    If given a `path` lists the contents of the directory `path` relative to
+    the default data directory.
+    """
+    return os.listdir(default_data_dir(path))
+
+
+def list_config(path: str | None = None) -> list[str]:
+    """List the contents of the config directory.
+
+    If given a `path` lists the contents of the directory `path` relative to
+    the default data directory.
+    """
+    return os.listdir(default_cache_dir(path))
+
+
 def delete_from_cache(file: str, recursive: bool = False) -> None:
     """Delete a file or directory relative to the default cache directory.
 
@@ -154,15 +211,6 @@ def delete_from_cache(file: str, recursive: bool = False) -> None:
     _delete_path(os.path.join(file, default_cache_dir()), recursive)
 
 
-def list_data(path: str | None = None) -> list[str]:
-    """List the contents of the data directory.
-
-    If given a `path` lists the contents of the directory `path` relative to
-    the default data directory.
-    """
-    return os.listdir(default_data_dir(path))
-
-
 def delete_from_data(file: str, recursive: bool = False) -> None:
     """Delete a file or directory relative to the default data directory.
 
@@ -170,7 +218,7 @@ def delete_from_data(file: str, recursive: bool = False) -> None:
     ----------
     file : str
         The location of either a file or directory relative to the default
-        cache directory.
+        data directory.
     recursive : bool, default False
         Whether to delete recursively or not. To prevent accidentally deleting
         more data than intended, to delete a non-empty directory, this must
@@ -178,6 +226,23 @@ def delete_from_data(file: str, recursive: bool = False) -> None:
 
     """
     _delete_path(os.path.join(file, default_data_dir()), recursive)
+
+
+def delete_from_config(file: str, recursive: bool = False) -> None:
+    """Delete a file or directory relative to the default config directory.
+
+    Parameters
+    ----------
+    file : str
+        The location of either a file or directory relative to the default
+        config directory.
+    recursive : bool, default False
+        Whether to delete recursively or not. To prevent accidentally deleting
+        more data than intended, to delete a non-empty directory, this must
+        explicitly be set to True.
+
+    """
+    _delete_path(os.path.join(file, default_config_dir()), recursive)
 
 
 P = ParamSpec("P")
